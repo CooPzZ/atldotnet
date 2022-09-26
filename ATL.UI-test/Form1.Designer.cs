@@ -28,22 +28,22 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.GoBtn = new System.Windows.Forms.Button();
+            this.GoAsyncProgressBtn = new System.Windows.Forms.Button();
             this.ProgressLbl = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
+            this.GoSyncBtn = new System.Windows.Forms.Button();
+            this.GoAsyncBtn = new System.Windows.Forms.Button();
+            this.GoSyncProgressBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // GoBtn
+            // GoAsyncProgressBtn
             // 
-            this.GoBtn.Location = new System.Drawing.Point(12, 56);
-            this.GoBtn.Name = "GoBtn";
-            this.GoBtn.Size = new System.Drawing.Size(136, 23);
-            this.GoBtn.TabIndex = 0;
-            this.GoBtn.Text = "ASYNC / PROGRESS";
-            this.GoBtn.UseVisualStyleBackColor = true;
-            this.GoBtn.Click += new System.EventHandler(this.GoAsyncProgressBtn_Click);
+            this.GoAsyncProgressBtn.Location = new System.Drawing.Point(12, 56);
+            this.GoAsyncProgressBtn.Name = "GoAsyncProgressBtn";
+            this.GoAsyncProgressBtn.Size = new System.Drawing.Size(136, 23);
+            this.GoAsyncProgressBtn.TabIndex = 0;
+            this.GoAsyncProgressBtn.Text = "ASYNC / PROGRESS";
+            this.GoAsyncProgressBtn.UseVisualStyleBackColor = true;
+            this.GoAsyncProgressBtn.Click += new System.EventHandler(this.GoAsyncProgressBtn_Click);
             // 
             // ProgressLbl
             // 
@@ -55,46 +55,46 @@
             this.ProgressLbl.Text = "progress%";
             this.ProgressLbl.Visible = false;
             // 
-            // button1
+            // GoSyncBtn
             // 
-            this.button1.Location = new System.Drawing.Point(12, 24);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(136, 23);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "SYNC";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.GoSyncBtn_Click);
+            this.GoSyncBtn.Location = new System.Drawing.Point(12, 24);
+            this.GoSyncBtn.Name = "GoSyncBtn";
+            this.GoSyncBtn.Size = new System.Drawing.Size(136, 23);
+            this.GoSyncBtn.TabIndex = 2;
+            this.GoSyncBtn.Text = "SYNC";
+            this.GoSyncBtn.UseVisualStyleBackColor = true;
+            this.GoSyncBtn.Click += new System.EventHandler(this.GoSyncBtn_Click);
             // 
-            // button2
+            // GoAsyncBtn
             // 
-            this.button2.Location = new System.Drawing.Point(12, 82);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(136, 23);
-            this.button2.TabIndex = 3;
-            this.button2.Text = "ASYNC";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.GoAsyncBtn_Click);
+            this.GoAsyncBtn.Location = new System.Drawing.Point(12, 82);
+            this.GoAsyncBtn.Name = "GoAsyncBtn";
+            this.GoAsyncBtn.Size = new System.Drawing.Size(136, 23);
+            this.GoAsyncBtn.TabIndex = 3;
+            this.GoAsyncBtn.Text = "ASYNC";
+            this.GoAsyncBtn.UseVisualStyleBackColor = true;
+            this.GoAsyncBtn.Click += new System.EventHandler(this.GoAsyncBtn_Click);
             // 
-            // button3
+            // GoSyncProgressBtn
             // 
-            this.button3.Location = new System.Drawing.Point(15, 126);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(136, 23);
-            this.button3.TabIndex = 4;
-            this.button3.Text = "SYNC / PROGRESS";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.GoSyncProgressBtn_Click);
+            this.GoSyncProgressBtn.Location = new System.Drawing.Point(15, 126);
+            this.GoSyncProgressBtn.Name = "GoSyncProgressBtn";
+            this.GoSyncProgressBtn.Size = new System.Drawing.Size(136, 23);
+            this.GoSyncProgressBtn.TabIndex = 4;
+            this.GoSyncProgressBtn.Text = "SYNC / PROGRESS";
+            this.GoSyncProgressBtn.UseVisualStyleBackColor = true;
+            this.GoSyncProgressBtn.Click += new System.EventHandler(this.GoSyncProgressBtn_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(226, 216);
-            this.Controls.Add(this.button3);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.GoSyncProgressBtn);
+            this.Controls.Add(this.GoAsyncBtn);
+            this.Controls.Add(this.GoSyncBtn);
             this.Controls.Add(this.ProgressLbl);
-            this.Controls.Add(this.GoBtn);
+            this.Controls.Add(this.GoAsyncProgressBtn);
             this.Name = "Form1";
             this.Text = "Form1";
             this.ResumeLayout(false);
@@ -104,11 +104,11 @@
 
         #endregion
 
-        private System.Windows.Forms.Button GoBtn;
+        private System.Windows.Forms.Button GoAsyncProgressBtn;
         private System.Windows.Forms.Label ProgressLbl;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button GoSyncBtn;
+        private System.Windows.Forms.Button GoAsyncBtn;
+        private System.Windows.Forms.Button GoSyncProgressBtn;
     }
 }
 
