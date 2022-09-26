@@ -8,7 +8,7 @@ namespace ATL.UI_test
 {
     public class TestUtils
     {
-        public static string REPO_NAME = "atldotnet";
+        public static string REPO_NAME = "ATLdotnet-CooPzZ";
         private static string locationRoot = null;
 
         public static string GetResourceLocationRoot(bool includeFinalSeparator = true)
