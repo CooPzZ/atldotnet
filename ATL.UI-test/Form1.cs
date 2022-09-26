@@ -7,7 +7,10 @@ namespace ATL.UI_test
 {
     public partial class Form1 : Form
     {
-        private const string filePath = @"D:\temp\m4a-mp4\98\03 The Front.m4a";
+        //private const string filePath = @"D:\temp\m4a-mp4\98\03 The Front.m4a";
+        const string file = @"M:\Temp\Audio\LongBook-Orig - Copy.m4b";
+        const string image1 = @"M:\Temp\Audio\image1.jpg";
+        const string image2 = @"M:\Temp\Audio\image2.jpg";
 
         public Form1()
         {
@@ -36,7 +39,7 @@ namespace ATL.UI_test
             ProgressLbl.Text = "";
             ProgressLbl.Visible = true;
 
-            processFile(filePath, "sync", false).Wait();
+            processFile(file, "sync", false).Wait();
         }
 
         private void GoSyncProgressBtn_Click(object sender, EventArgs e)
@@ -45,7 +48,7 @@ namespace ATL.UI_test
             ProgressLbl.Visible = true;
 
             Action<float> progress = new Action<float>(displayProgressForceRefresh);
-            processFile(filePath, "legacy", false, progress).Wait();
+            processFile(file, "legacy", false, progress).Wait();
         }
 
         private async void GoAsyncProgressBtn_Click(object sender, EventArgs e)
@@ -53,8 +56,8 @@ namespace ATL.UI_test
             ProgressLbl.Text = "";
             ProgressLbl.Visible = true;
 
-            Action<float> progress = new Action<float>(displayProgress);
-            await processFile(filePath, "async progress", true, progress);
+            Action<float> progress = new Action<float>(displayProgressForceRefresh);
+            await processFile(file, "async progress", true, progress);
         }
 
         private async void GoAsyncBtn_Click(object sender, EventArgs e)
@@ -62,7 +65,7 @@ namespace ATL.UI_test
             ProgressLbl.Text = "";
             ProgressLbl.Visible = true;
 
-            await processFile(filePath, "async silent", true);
+            await processFile(file, "async silent", true);
         }
 
         private async Task<bool> processFile(string path, string method, bool asynchronous, Action<float> progress = null)
@@ -93,16 +96,16 @@ namespace ATL.UI_test
                 long lDataOffset = theFile.TechnicalInformation.AudioDataOffset;
                 long lDataAudioSize = theFile.TechnicalInformation.AudioDataSize;
                 theFile.Chapters[0].Title += 'x';
-                theFile.Chapters[0].Picture = PictureInfo.fromBinaryData(System.IO.File.ReadAllBytes(@"C:\Users\zeugm\source\repos\Zeugma440\atldotnet\ATL.test\Resources\_Images\pic1.jpeg"));
+                theFile.Chapters[0].Picture = PictureInfo.fromBinaryData(System.IO.File.ReadAllBytes(image1));
                 //theFile.Chapters[0].Picture = PictureInfo.fromBinaryData(System.IO.File.ReadAllBytes("M:\\Temp\\Audio\\avatarOfSorts.png"));
                 theFile.Chapters[0].Picture.ComputePicHash();
                 theFile.Chapters[1].Title += 'x';
-                theFile.Chapters[1].Picture = PictureInfo.fromBinaryData(System.IO.File.ReadAllBytes(@"C:\Users\zeugm\source\repos\Zeugma440\atldotnet\ATL.test\Resources\_Images\pic2.jpeg"));
+                theFile.Chapters[1].Picture = PictureInfo.fromBinaryData(System.IO.File.ReadAllBytes(image2));
                 //theFile.Chapters[1].Picture = PictureInfo.fromBinaryData(System.IO.File.ReadAllBytes("M:\\Temp\\Audio\\themeOfTheTrack.jpg"));
                 theFile.Chapters[1].Picture.ComputePicHash();
                 */
                 theFile.Title += "aaa";
-                theFile.EmbeddedPictures.Add(PictureInfo.fromBinaryData(System.IO.File.ReadAllBytes(@"C:\Users\zeugm\source\repos\Zeugma440\atldotnet\ATL.test\Resources\_Images\pic1.jpeg")));
+                theFile.EmbeddedPictures.Add(PictureInfo.fromBinaryData(System.IO.File.ReadAllBytes(image1)));
 
                 ProgressLbl.Text = "Saving...";
                 Application.DoEvents();
