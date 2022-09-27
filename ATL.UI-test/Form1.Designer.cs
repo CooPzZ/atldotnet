@@ -33,11 +33,12 @@
             this.GoSyncBtn = new System.Windows.Forms.Button();
             this.GoAsyncBtn = new System.Windows.Forms.Button();
             this.GoSyncProgressBtn = new System.Windows.Forms.Button();
+            this.chkForceDiskIO = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // GoAsyncProgressBtn
             // 
-            this.GoAsyncProgressBtn.Location = new System.Drawing.Point(12, 56);
+            this.GoAsyncProgressBtn.Location = new System.Drawing.Point(12, 80);
             this.GoAsyncProgressBtn.Name = "GoAsyncProgressBtn";
             this.GoAsyncProgressBtn.Size = new System.Drawing.Size(136, 23);
             this.GoAsyncProgressBtn.TabIndex = 0;
@@ -57,7 +58,7 @@
             // 
             // GoSyncBtn
             // 
-            this.GoSyncBtn.Location = new System.Drawing.Point(12, 24);
+            this.GoSyncBtn.Location = new System.Drawing.Point(12, 41);
             this.GoSyncBtn.Name = "GoSyncBtn";
             this.GoSyncBtn.Size = new System.Drawing.Size(136, 23);
             this.GoSyncBtn.TabIndex = 2;
@@ -67,7 +68,7 @@
             // 
             // GoAsyncBtn
             // 
-            this.GoAsyncBtn.Location = new System.Drawing.Point(12, 82);
+            this.GoAsyncBtn.Location = new System.Drawing.Point(12, 109);
             this.GoAsyncBtn.Name = "GoAsyncBtn";
             this.GoAsyncBtn.Size = new System.Drawing.Size(136, 23);
             this.GoAsyncBtn.TabIndex = 3;
@@ -77,7 +78,7 @@
             // 
             // GoSyncProgressBtn
             // 
-            this.GoSyncProgressBtn.Location = new System.Drawing.Point(15, 126);
+            this.GoSyncProgressBtn.Location = new System.Drawing.Point(12, 12);
             this.GoSyncProgressBtn.Name = "GoSyncProgressBtn";
             this.GoSyncProgressBtn.Size = new System.Drawing.Size(136, 23);
             this.GoSyncProgressBtn.TabIndex = 4;
@@ -85,11 +86,23 @@
             this.GoSyncProgressBtn.UseVisualStyleBackColor = true;
             this.GoSyncProgressBtn.Click += new System.EventHandler(this.GoSyncProgressBtn_Click);
             // 
+            // chkForceDiskIO
+            // 
+            this.chkForceDiskIO.AutoSize = true;
+            this.chkForceDiskIO.Location = new System.Drawing.Point(12, 187);
+            this.chkForceDiskIO.Name = "chkForceDiskIO";
+            this.chkForceDiskIO.Size = new System.Drawing.Size(107, 17);
+            this.chkForceDiskIO.TabIndex = 5;
+            this.chkForceDiskIO.Text = "Use ForceDiskIO";
+            this.chkForceDiskIO.UseVisualStyleBackColor = true;
+            this.chkForceDiskIO.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(226, 216);
+            this.Controls.Add(this.chkForceDiskIO);
             this.Controls.Add(this.GoSyncProgressBtn);
             this.Controls.Add(this.GoAsyncBtn);
             this.Controls.Add(this.GoSyncBtn);
@@ -109,6 +122,7 @@
         private System.Windows.Forms.Button GoSyncBtn;
         private System.Windows.Forms.Button GoAsyncBtn;
         private System.Windows.Forms.Button GoSyncProgressBtn;
+        private System.Windows.Forms.CheckBox chkForceDiskIO;
     }
 }
 

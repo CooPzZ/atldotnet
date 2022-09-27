@@ -8,7 +8,7 @@ namespace ATL.UI_test
     public partial class Form1 : Form
     {
         //private const string filePath = @"D:\temp\m4a-mp4\98\03 The Front.m4a";
-        const string file = @"M:\Temp\Audio\LongBook-Orig.m4b";
+        const string file = @"M:\Temp\Audio\LongBook.m4b";
         const string image1 = @"M:\Temp\Audio\image1.jpg";
         const string image2 = @"M:\Temp\Audio\image2.jpg";
 
@@ -138,6 +138,11 @@ namespace ATL.UI_test
                 Application.DoEvents();
                 File.Delete(testFileLocation);
             }
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            ATL.Settings.ForceDiskIO = chkForceDiskIO.Checked;
         }
     }
 }
