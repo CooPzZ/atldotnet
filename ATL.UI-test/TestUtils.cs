@@ -9,7 +9,7 @@ namespace ATL.UI_test
     public class TestUtils
     {
         public static string REPO_NAME = "ATLdotnet-CooPzZ";
-        private static string locationRoot = null;
+        private static string locationRoot = "M:\\Temp\\Audio";
 
         public static string GetResourceLocationRoot(bool includeFinalSeparator = true)
         {
