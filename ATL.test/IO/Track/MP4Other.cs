@@ -48,6 +48,8 @@ namespace ATL.test.IO.TrackObject
         #endregion
 
         #region Other Specific Tests
+
+        double removeTag_expectedPostLenght = 9526115;
         /// <summary>
         /// Test Track.Remove() that it removes the tag based on File details.
         /// </summary>
@@ -69,8 +71,11 @@ namespace ATL.test.IO.TrackObject
 
             Assert.AreEqual(tDuration, theFile.DurationMs, "Duration should be the same.");
             Assert.IsTrue(dLenght > dPostLenght, "File should be smaller.");
-            Assert.AreEqual(9526213, dPostLenght, "File should be 9526213 once tags are removed.");
+            // 8 extra bytes because the empty padding atom (`free` atom) isn't removed by design when using Track.Remove
+            // as padding areas aren't considered as metadata per se, and are kept to facilitate file expansion
+            Assert.AreEqual(removeTag_expectedPostLenght+8, dPostLenght, $"File should be {removeTag_expectedPostLenght+8} once tags are removed.");
         }
+
 
         /// <summary>
         /// Test Track.Remove() after editing chapter images when chapter 1 doesnt have an image set.
@@ -102,14 +107,15 @@ namespace ATL.test.IO.TrackObject
             //Switch these Assertions for expected editing.
             //Assert.IsTrue(theFile.Chapters[0].Picture == null, "Picture should not exist in Chap 1."); 
             //Assert.IsTrue(theFile.Chapters[1].Picture != null, "Picture should exist in Chap 2.");
-            Assert.IsTrue(theFile.Chapters[0].Picture != null, "Picture should should exist in Chap 1 due to MP4 format limitation.");
+            Assert.IsTrue(theFile.Chapters[0].Picture != null, "Picture should exist in Chap 1 due to MP4 format limitation.");
             Assert.IsTrue(theFile.Chapters[1].Picture == null, "Picture is no longer in Chap 2 due to MP4 format limitation.");
 
             System.Console.WriteLine("# Remove Tags #");
             theFile.Remove(MetaDataIOFactory.TagType.NATIVE);
             theFile = new Track(fileToTestOn);
+            double dPostLenght = FileLength(fileToTestOn);
             System.Console.WriteLine("Duration: " + theFile.DurationMs.ToString());
-            System.Console.WriteLine("File Length: " + FileLength(fileToTestOn));
+            System.Console.WriteLine("File Length: " + dPostLenght);
             System.Console.WriteLine("Chapters: " + theFile.Chapters.Count.ToString());
             if (theFile.Chapters.Count > 0)
             {
@@ -118,8 +124,8 @@ namespace ATL.test.IO.TrackObject
             }
 
             Assert.AreEqual(tDuration, theFile.DurationMs, "Duration should be the same.");
-            Assert.IsTrue(dLenght > FileLength(fileToTestOn), "File should be smaller.");
-            Assert.AreEqual(9623601, dLenght, "File should be 9526213 once tags are removed - As per test CS_RemoveTag.");
+            Assert.IsTrue(dLenght > dPostLenght, "File should be smaller.");
+            Assert.AreEqual(removeTag_expectedPostLenght, dPostLenght, $"File should be {removeTag_expectedPostLenght} once tags are removed - As per test CS_RemoveTag.");
         }
 
         #endregion
