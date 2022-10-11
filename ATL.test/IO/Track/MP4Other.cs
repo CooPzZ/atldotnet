@@ -376,7 +376,7 @@ namespace ATL.test.IO.TrackObject
         }
 
         /// <summary>
-        /// Test Track.Remove() and editing with chapters still works using a loop.
+        /// Test Track.Remove() and editing with chapters and images still works using a loop.
         /// </summary>
         [TestMethod]
         public void CS_RemoveTag_AddMetaAndChapImagesLoop()
