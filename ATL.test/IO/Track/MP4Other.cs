@@ -232,7 +232,7 @@ namespace ATL.test.IO.TrackObject
 
 
         /// <summary>
-        /// Test Track.Remove() and editing still works.
+        /// Test Track.Remove() and editing still works using a loop.
         /// </summary>
         [TestMethod]
         public void CS_RemoveTag_AddMetaLoop()
@@ -288,7 +288,7 @@ namespace ATL.test.IO.TrackObject
 
 
         /// <summary>
-        /// Test Track.Remove() and editing with chapters still works.
+        /// Test Track.Remove() and editing with chapters still works using a loop.
         /// </summary>
         [TestMethod]
         public void CS_RemoveTag_AddMetaAndChapLoop()
@@ -377,7 +377,7 @@ namespace ATL.test.IO.TrackObject
 
 
         /// <summary>
-        /// Test Track.Remove() and editing still works.
+        /// Test editing  over and over still works.
         /// </summary>
         [TestMethod]
         public void CS_ChangeMeta_Loop()
@@ -420,7 +420,7 @@ namespace ATL.test.IO.TrackObject
 
 
         /// <summary>
-        /// Test Track.Remove() and editing still works.
+        /// Test editing over and over with chapters still works.
         /// </summary>
         [TestMethod]
         public void CS_ChangeMetaAndChap_Loop()
