@@ -375,6 +375,96 @@ namespace ATL.test.IO.TrackObject
             if (WithErrors) Assert.Fail("There were errors noted in the Logs on saving;");
         }
 
+        /// <summary>
+        /// Test Track.Remove() and editing with chapters still works using a loop.
+        /// </summary>
+        [TestMethod]
+        public void CS_RemoveTag_AddMetaAndChapImagesLoop()
+        {
+            //string fileToTestOn = audioFilePath;
+            System.IO.File.Delete(fileToTestOn);
+            System.IO.File.Copy("M:\\Temp\\Audio\\TestFromABC-Orig.m4b", fileToTestOn);
+            Track theFile = new Track(fileToTestOn);
+            double tDuration = theFile.DurationMs; System.Console.WriteLine("Pre Duration: " + tDuration);
+            double dLenght = FileLength(fileToTestOn); System.Console.WriteLine("Pre File Length: " + dLenght);
+            theFile.Remove(removeTagsBy);
+            //theFile.Save(); //Dont need.
+            theFile = new Track(fileToTestOn);
+            double dPostLenght = FileLength(fileToTestOn);
+            System.Console.WriteLine("Clear Duration: " + theFile.DurationMs.ToString());
+            System.Console.WriteLine("Clear File Length: " + dPostLenght);
+
+            Assert.AreEqual(tDuration, theFile.DurationMs, "Duration should be the same.");
+            Assert.IsTrue(dLenght > dPostLenght, "File should be smaller.");
+            // 8 extra bytes because the empty padding atom (`free` atom) isn't removed by design when using Track.Remove
+            // as padding areas aren't considered as metadata per se, and are kept to facilitate file expansion
+            Assert.AreEqual(removeTag_expectedPostLenght + 8, dPostLenght, $"File should be {removeTag_expectedPostLenght + 8} once tags are removed.");
+
+            bool WithErrors = false;
+            //Add Meta again
+            System.Console.WriteLine("Initial Save Meta: ");
+            var log = new ArrayLogger();
+            theFile = new Track(fileToTestOn);
+            theFile.Description = "New Description";
+            theFile.Title = "New Title";
+            theFile.Album = "New Album";
+            theFile.Chapters = new List<ChapterInfo>();
+            ChapterInfo ch = new ChapterInfo();
+            ch.StartTime = 0;
+            ch.Title = "New Chap0";
+            ch.Picture = PictureInfo.fromBinaryData(System.IO.File.ReadAllBytes(TestUtils.GetResourceLocationRoot() + "_Images/pic1.jpg"));
+            theFile.Chapters.Add(ch);
+            ch = new ChapterInfo();
+            ch.StartTime = 10000;
+            ch.Title = "New Chap1";
+            ch.Picture = PictureInfo.fromBinaryData(System.IO.File.ReadAllBytes(TestUtils.GetResourceLocationRoot() + "_Images/pic2.jpg"));
+            theFile.Chapters.Add(ch);
+            Action<float> progress = new Action<float>(x => System.Console.WriteLine(x.ToString()));
+            if (theFile.Save(progress) == false)
+                Assert.Fail("Failed to save.");
+            System.Console.WriteLine("ErrorLOG: ");
+            foreach (Logging.Log.LogItem l in log.GetAllItems(Logging.Log.LV_ERROR))
+                System.Console.WriteLine("- " + l.Message);
+            WithErrors = (WithErrors || log.GetAllItems(Logging.Log.LV_ERROR).Count > 0);
+
+            //Add Meta again
+            int TopEdit = 40;
+            for (int n = 0; n <= TopEdit; n++)
+            {
+                System.Console.WriteLine($"Save {n}: ");
+                log = new ArrayLogger();
+                theFile = new Track(fileToTestOn);
+                Assert.IsTrue(theFile.Description.Length > 0, "Description not found!");
+                theFile.Description = "New Description" + n.ToString();
+                theFile.Title = "New Title" + n.ToString();
+                theFile.Album = "New Album" + n.ToString();
+                Assert.AreEqual(2, theFile.Chapters.Count, "Chapters not found!");
+                theFile.Chapters[0].Title = "New Chap0-" + n.ToString();
+                theFile.Chapters[0].Picture = PictureInfo.fromBinaryData(System.IO.File.ReadAllBytes(TestUtils.GetResourceLocationRoot() + $"_Images/pic{((n / 2 == 0)? 1 : 2)}.jpg"));
+                theFile.Chapters[1].Title = "New Chap1-" + n.ToString();
+                theFile.Chapters[1].Picture = PictureInfo.fromBinaryData(System.IO.File.ReadAllBytes(TestUtils.GetResourceLocationRoot() + $"_Images/pic{((n / 2 == 0) ? 2 : 1)}.jpg"));
+                progress = new Action<float>(x => System.Console.WriteLine(x.ToString()));
+                if (theFile.Save(progress) == false)
+                    Assert.Fail("Failed to save.");
+                System.Console.WriteLine($"ErrorLOG: {n} ");
+                foreach (Logging.Log.LogItem l in log.GetAllItems(Logging.Log.LV_ERROR))
+                    System.Console.WriteLine("- " + l.Message);
+                WithErrors = (WithErrors || log.GetAllItems(Logging.Log.LV_ERROR).Count > 0);
+            }
+
+            theFile = new Track(fileToTestOn);
+            dPostLenght = FileLength(fileToTestOn);
+            System.Console.WriteLine("POST Add Duration: " + theFile.DurationMs.ToString());
+            System.Console.WriteLine("POST Add File Length: " + dPostLenght);
+            Assert.AreEqual($"New Description{TopEdit}", theFile.Description, "Description should be the same.");
+            Assert.AreEqual($"New Title{TopEdit}", theFile.Title, "Title should be the same.");
+            Assert.AreEqual($"New Album{TopEdit}", theFile.Album, "Album should be the same.");
+            Assert.AreEqual($"New Chap0-{TopEdit}", theFile.Chapters[0].Title, "Album should be the same.");
+            Assert.AreEqual($"New Chap1-{TopEdit}", theFile.Chapters[1].Title, "Album should be the same.");
+
+            if (WithErrors) Assert.Fail("There were errors noted in the Logs on saving;");
+        }
+
 
         /// <summary>
         /// Test editing  over and over still works.
