@@ -78,7 +78,15 @@ namespace ATL.AudioData.IO
             { "©pub", Field.PUBLISHER },
             { "rldt", Field.PUBLISHING_DATE},
             { "prID", Field.PRODUCT_ID},
-            { "----:com.apple.iTunes:CONDUCTOR", Field.CONDUCTOR }
+            { "----:com.apple.iTunes:CONDUCTOR", Field.CONDUCTOR },
+            { "soal", Field.SORT_ALBUM },
+            { "soaa", Field.SORT_ALBUM_ARTIST },
+            { "soar", Field.SORT_ARTIST },
+            { "sonm", Field.SORT_TITLE },
+            { "©grp", Field.GROUP },
+            { "©mvi", Field.SERIES_PART},
+            { "©mvn", Field.SERIES_TITLE },
+            { "ldes", Field.LONG_DESCRIPTION }
         };
 
         // Mapping between MP4 frame codes and frame classes that aren't class 1 (UTF-8 text)
@@ -519,7 +527,7 @@ namespace ATL.AudioData.IO
                 if (chapMdatDataSize > -1)
                 {
                     structureHelper.AddZone(chapMdatOffset + 8, chapMdatDataSize, ZONE_MP4_QT_CHAP_MDAT);
-                    structureHelper.AddSize(chapMdatOffset, chapMdatChapSize, ZONE_MP4_QT_CHAP_MDAT, ZONE_MP4_QT_CHAP_MDAT);
+                    structureHelper.AddSize(chapMdatOffset, chapMdatChapSize, ZONE_MP4_QT_CHAP_MDAT);
                 }
             } // Write mode
 
@@ -748,7 +756,7 @@ namespace ATL.AudioData.IO
             // Look for "trak.tref.chap" atom to detect QT chapters for current track
             source.BaseStream.Seek(trakPosition + 8, SeekOrigin.Begin);
             uint trefSize = navigateToAtom(source.BaseStream, "tref");
-            if (trefSize > 0 && 0 == chapterTrackIndexes.Count)
+            if (trefSize > 8 && 0 == chapterTrackIndexes.Count)
             {
                 long trefPosition = source.BaseStream.Position - 8;
                 bool parsePreviousTracks = false;
@@ -1539,7 +1547,7 @@ namespace ATL.AudioData.IO
                 return 0;
             }
 
-            return atomSize;
+            return (atomKey.Equals(atomHeader)) ? atomSize : 0;
         }
 
 
@@ -2065,7 +2073,9 @@ namespace ATL.AudioData.IO
 
             if (qtChapterTextTrackNum > 0)
                 w.Write(StreamUtils.EncodeBEInt32(qtChapterTextTrackNum));
-            if (qtChapterPictureTrackNum > 0)
+
+            int nbActualChapterImages = chapters.Count(ch => ch.Picture != null && ch.Picture.PictureData.Length > 0);
+            if (qtChapterPictureTrackNum > 0 && nbActualChapterImages > 0)
                 w.Write(StreamUtils.EncodeBEInt32(qtChapterPictureTrackNum));
 
             long finalFramePos = w.BaseStream.Position;
@@ -2078,11 +2088,7 @@ namespace ATL.AudioData.IO
 
         private int writeQTChaptersData(BinaryWriter w, IList<ChapterInfo> chapters)
         {
-            if (null == chapters || 0 == chapters.Count)
-            {
-                structureHelper.RemoveZone(ZONE_MP4_QT_CHAP_MDAT); // Current zone commits suicide so that its size header doesn't get written
-                return 0;
-            }
+            if (null == chapters || 0 == chapters.Count) return 0;
 
             foreach (ChapterInfo chapter in chapters)
             {
@@ -2095,12 +2101,9 @@ namespace ATL.AudioData.IO
                 w.Write(StreamUtils.EncodeBEInt32(256));
             }
 
-            foreach (ChapterInfo chapter in chapters)
+            foreach (var chapter in chapters.Where(chapter => chapter.Picture != null))
             {
-                if (chapter.Picture != null)
-                {
-                    w.Write(chapter.Picture.PictureData);
-                }
+                w.Write(chapter.Picture.PictureData);
             }
 
             return 1;
@@ -2467,26 +2470,29 @@ namespace ATL.AudioData.IO
         }
 
         // reduce the useful MDAT to a few Kbs (for dev purposes only)
-        /*
-        public override bool Remove(Stream s)
-        {
-            long chapDataSize = 0;
-            foreach (Zone zone in Zones)
-            {
-                if (zone.Name.Equals(ZONE_MP4_QT_CHAP_MDAT))
-                {
-                    chapDataSize = zone.Size;
-                    break;
-                }
-            }
-            s.Seek(AudioDataOffset, SeekOrigin.Begin);
-            long newSize = chapDataSize + 32000;
-            StreamUtils.WriteBEInt32(s, (int)newSize);
-            s.Seek(4 + newSize, SeekOrigin.Current);
-            StreamUtils.ShortenStream(s, AudioDataOffset + AudioDataSize, (uint)(AudioDataSize - newSize));
 
-            return true;
-        }
-        */
+#pragma warning disable S125 // Sections of code should not be commented out
+        /*
+                public override bool Remove(Stream s)
+                {
+                    long chapDataSize = 0;
+                    foreach (Zone zone in Zones)
+                    {
+                        if (zone.Name.Equals(ZONE_MP4_QT_CHAP_MDAT))
+                        {
+                            chapDataSize = zone.Size;
+                            break;
+                        }
+                    }
+                    s.Seek(AudioDataOffset, SeekOrigin.Begin);
+                    long newSize = chapDataSize + 32000;
+                    StreamUtils.WriteBEInt32(s, (int)newSize);
+                    s.Seek(4 + newSize, SeekOrigin.Current);
+                    StreamUtils.ShortenStream(s, AudioDataOffset + AudioDataSize, (uint)(AudioDataSize - newSize));
+
+                    return true;
+                }
+                */
     }
+#pragma warning restore S125 // Sections of code should not be commented out
 }

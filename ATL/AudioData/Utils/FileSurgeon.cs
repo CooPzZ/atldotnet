@@ -225,7 +225,7 @@ namespace ATL.AudioData.IO
                         if (initialBufferSize > 0)
                         {
                             if (structureHelper != null)
-                                fullScopeWriter.Seek(structureHelper.getCorrectedOffset(region.StartOffset), SeekOrigin.Begin);
+                                fullScopeWriter.Seek(structureHelper.getCorrectedOffset(region.StartOffset, region.Id), SeekOrigin.Begin);
                             else // for classes that don't use FileStructureHelper(FLAC)
                                 fullScopeWriter.Seek(region.StartOffset + globalCumulativeDelta, SeekOrigin.Begin);
 
@@ -266,11 +266,18 @@ namespace ATL.AudioData.IO
                                     {
                                         newTagSize = memStream.Length;
 
-                                        if (embedder != null && implementedTagType == MetaDataIOFactory.TagType.ID3V2 && embedder.ID3v2EmbeddingHeaderSize > 0)
+                                        if (embedder != null && implementedTagType == MetaDataIOFactory.TagType.ID3V2)
                                         {
-                                            StreamUtils.LengthenStream(memStream, 0, embedder.ID3v2EmbeddingHeaderSize);
-                                            memStream.Position = 0;
-                                            embedder.WriteID3v2EmbeddingHeader(memStream, newTagSize);
+                                            // Insert header before the written metadata
+                                            if (embedder.ID3v2EmbeddingHeaderSize > 0)
+                                            {
+                                                StreamUtils.LengthenStream(memStream, 0, embedder.ID3v2EmbeddingHeaderSize);
+                                                memStream.Position = 0;
+                                                embedder.WriteID3v2EmbeddingHeader(memStream, newTagSize);
+                                            }
+                                            // Write footer after the written metadata
+                                            memStream.Seek(0, SeekOrigin.End);
+                                            embedder.WriteID3v2EmbeddingFooter(memStream, newTagSize);
 
                                             newTagSize = memStream.Length;
                                         }
@@ -351,10 +358,9 @@ namespace ATL.AudioData.IO
                     if (buffer != null)
                     {
                         // -- Adjust file slot to new size of buffer --
-                        //long tagEndOffset = region.StartOffset + initialBufferSize;
                         long tagEndOffset;
                         if (structureHelper != null)
-                            tagEndOffset = structureHelper.getCorrectedOffset(region.StartOffset, false) + initialBufferSize;
+                            tagEndOffset = structureHelper.getCorrectedOffset(region.StartOffset, region.Id) + initialBufferSize;
                         else // for classes that don't use FileStructureHelper(FLAC)
                             tagEndOffset = region.StartOffset + globalCumulativeDelta - regionCumulativeDelta + initialBufferSize;
 
@@ -372,7 +378,7 @@ namespace ATL.AudioData.IO
 
                         // Copy tag contents to the new slot
                         if (structureHelper != null)
-                            fullScopeWriter.Seek(structureHelper.getCorrectedOffset(region.StartOffset, false), SeekOrigin.Begin);
+                            fullScopeWriter.Seek(structureHelper.getCorrectedOffset(region.StartOffset, region.Id), SeekOrigin.Begin);
                         else // for classes that don't use FileStructureHelper(FLAC)
                             fullScopeWriter.Seek(region.StartOffset + globalCumulativeDelta - regionCumulativeDelta, SeekOrigin.Begin); // don't apply self-created delta
 
@@ -443,7 +449,7 @@ namespace ATL.AudioData.IO
                         if (initialBufferSize > 0)
                         {
                             if (structureHelper != null)
-                                fullScopeWriter.Seek(structureHelper.getCorrectedOffset(region.StartOffset), SeekOrigin.Begin);
+                                fullScopeWriter.Seek(structureHelper.getCorrectedOffset(region.StartOffset, region.Id), SeekOrigin.Begin);
                             else // for classes that don't use FileStructureHelper(FLAC)
                                 fullScopeWriter.Seek(region.StartOffset + globalCumulativeDelta, SeekOrigin.Begin);
 
@@ -484,11 +490,18 @@ namespace ATL.AudioData.IO
                                     {
                                         newTagSize = memStream.Length;
 
-                                        if (embedder != null && implementedTagType == MetaDataIOFactory.TagType.ID3V2 && embedder.ID3v2EmbeddingHeaderSize > 0)
+                                        if (embedder != null && implementedTagType == MetaDataIOFactory.TagType.ID3V2)
                                         {
-                                            await StreamUtilsAsync.LengthenStreamAsync(memStream, 0, embedder.ID3v2EmbeddingHeaderSize);
-                                            memStream.Position = 0;
-                                            embedder.WriteID3v2EmbeddingHeader(memStream, newTagSize);
+                                            // Insert header before the written metadata
+                                            if (embedder.ID3v2EmbeddingHeaderSize > 0)
+                                            {
+                                                StreamUtils.LengthenStream(memStream, 0, embedder.ID3v2EmbeddingHeaderSize);
+                                                memStream.Position = 0;
+                                                embedder.WriteID3v2EmbeddingHeader(memStream, newTagSize);
+                                            }
+                                            // Write footer after the written metadata
+                                            memStream.Seek(0, SeekOrigin.End);
+                                            embedder.WriteID3v2EmbeddingFooter(memStream, newTagSize);
 
                                             newTagSize = memStream.Length;
                                         }
@@ -569,10 +582,9 @@ namespace ATL.AudioData.IO
                     if (buffer != null)
                     {
                         // -- Adjust file slot to new size of buffer --
-                        //long tagEndOffset = region.StartOffset + initialBufferSize;
                         long tagEndOffset;
                         if (structureHelper != null)
-                            tagEndOffset = structureHelper.getCorrectedOffset(region.StartOffset, false) + initialBufferSize;
+                            tagEndOffset = structureHelper.getCorrectedOffset(region.StartOffset, region.Id) + initialBufferSize;
                         else // for classes that don't use FileStructureHelper(FLAC)
                             tagEndOffset = region.StartOffset + globalCumulativeDelta - regionCumulativeDelta + initialBufferSize;
 
@@ -590,7 +602,7 @@ namespace ATL.AudioData.IO
 
                         // Copy tag contents to the new slot
                         if (structureHelper != null)
-                            fullScopeWriter.Seek(structureHelper.getCorrectedOffset(region.StartOffset, false), SeekOrigin.Begin);
+                            fullScopeWriter.Seek(structureHelper.getCorrectedOffset(region.StartOffset, region.Id), SeekOrigin.Begin);
                         else // for classes that don't use FileStructureHelper(FLAC)
                             fullScopeWriter.Seek(region.StartOffset + globalCumulativeDelta - regionCumulativeDelta, SeekOrigin.Begin); // don't apply self-created delta
 

@@ -118,6 +118,45 @@ namespace ATL
         /// </summary>
         public string ProductId { get; set; }
         /// <summary>
+        /// Title sort order
+        /// A string which should be used instead of the album for sorting purposes
+        /// </summary>
+        public string SortAlbum { get; set; }
+        /// <summary>
+        /// Title sort order
+        /// A string which should be used instead of the album artist for sorting purposes
+        /// </summary>
+        public string SortAlbumArtist { get; set; }
+        /// <summary>
+        /// Title sort order
+        /// A string which should be used instead of the artist for sorting purposes
+        /// </summary>
+        public string SortArtist { get; set; }
+        /// <summary>
+        /// Title sort order
+        /// A string which should be used instead of the title for sorting purposes
+        /// </summary>
+        public string SortTitle { get; set; }
+        /// <summary>
+        /// Content group description
+        /// Used if the sound belongs to a larger category of sounds/music.
+        /// For example, classical music is often sorted in different musical sections (e.g. "Piano Concerto").
+        /// </summary>
+        public string Group { get; set; }
+        /// <summary>
+        /// Series title / Movement name
+        /// </summary>
+        public string SeriesTitle { get; set; }
+        /// <summary>
+        /// Series part / Movement index
+        /// </summary>
+        public string SeriesPart { get; set; }
+        /// <summary>
+        /// Long description (may also be called "Podcast description")
+        /// </summary>
+        public string LongDescription { get; set; }
+
+        /// <summary>
 		/// Recording Date (set to DateTime.MinValue to remove)
 		/// </summary>
         public DateTime? Date { get; set; }
@@ -335,6 +374,14 @@ namespace ATL
             AlbumArtist = Utils.ProtectValue(processString(metadata.AlbumArtist));
             Conductor = Utils.ProtectValue(processString(metadata.Conductor));
             ProductId = Utils.ProtectValue(processString(metadata.ProductId));
+            SortAlbum = Utils.ProtectValue(processString(metadata.SortAlbum));
+            SortAlbumArtist = Utils.ProtectValue(processString(metadata.SortAlbumArtist));
+            SortArtist = Utils.ProtectValue(processString(metadata.SortArtist));
+            SortTitle = Utils.ProtectValue(processString(metadata.SortTitle));
+            Group = Utils.ProtectValue(processString(metadata.Group));
+            SeriesTitle = Utils.ProtectValue(processString(metadata.SeriesTitle));
+            SeriesPart = Utils.ProtectValue(processString(metadata.SeriesPart));
+            LongDescription = Utils.ProtectValue(processString(metadata.LongDescription));
             Album = Utils.ProtectValue(processString(metadata.Album));
             Date = update(metadata.Date);
             PublishingDate = update(metadata.PublishingDate);
@@ -393,6 +440,14 @@ namespace ATL
             result.IntegrateValue(Field.ALBUM_ARTIST, AlbumArtist);
             result.IntegrateValue(Field.CONDUCTOR, Conductor);
             result.IntegrateValue(Field.PRODUCT_ID, ProductId);
+            result.IntegrateValue(Field.SORT_ALBUM, SortAlbum);
+            result.IntegrateValue(Field.SORT_ALBUM_ARTIST, SortAlbumArtist);
+            result.IntegrateValue(Field.SORT_ARTIST, SortArtist);
+            result.IntegrateValue(Field.SORT_TITLE, SortTitle);
+            result.IntegrateValue(Field.GROUP, Group);
+            result.IntegrateValue(Field.SERIES_TITLE, SeriesTitle);
+            result.IntegrateValue(Field.SERIES_PART, SeriesPart);
+            result.IntegrateValue(Field.LONG_DESCRIPTION, LongDescription);
             result.IntegrateValue(Field.RECORDING_DATE, toTagValue(Date));
             result.IntegrateValue(Field.RECORDING_YEAR, toTagValue(Year));
             result.IntegrateValue(Field.ALBUM, Album);
@@ -472,8 +527,7 @@ namespace ATL
         /// <summary>
         /// Save Track to disk
         /// Use Save instead of SaveAsync if you're looking for pure performance
-        /// or if you don't need any progress feedback
-        /// (e.g. console app, mass-updating files)
+        /// or if you don't need any progress feedback (e.g. console app, mass-updating files)
         /// </summary>
         /// <param name="writeProgress">Callback that will be called multiple times when saving changes, as saving progresses (default : null = no callback)</param>
         /// <returns>True if save succeeds; false if it fails
@@ -504,6 +558,8 @@ namespace ATL
 
         /// <summary>
         /// Remove the given tag type from the Track
+        /// Use Remove instead of RemoveAsync if you're looking for pure performance
+        /// or if you don't need any progress feedback (e.g. console app, mass-updating files)
         /// </summary>
         /// <param name="tagType">Tag type to remove</param>
         /// <param name="writeProgress">Callback that will be called multiple times when saving changes, as saving progresses (default : null = no callback)</param>
@@ -518,6 +574,16 @@ namespace ATL
             return result;
         }
 
+        /// <summary>
+        /// Remove the given tag type from the Track
+        /// Use RemoveAsync instead of Remove if you need progress feedback
+        /// (e.g. Windows Forms app with progress bar that updates one file at a time)
+        /// </summary>
+        /// <param name="tagType">Tag type to remove</param>
+        /// <param name="writeProgress">Callback that will be called multiple times when saving changes, as saving progresses (default : null = no callback)</param>
+        /// <see cref="MetaDataIOFactory"/>
+        /// <returns>True if removal succeeds; false if it fails
+        /// NB : Failure reason is saved to the ATL log</returns>
         public async Task<bool> RemoveAsync(MetaDataIOFactory.TagType tagType = MetaDataIOFactory.TagType.ANY, IProgress<float> writeProgress = null)
         {
             bool result = await fileIO.RemoveAsync(tagType, writeProgress);

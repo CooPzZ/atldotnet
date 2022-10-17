@@ -232,7 +232,7 @@ namespace ATL.test.IO.MetaData
             }
             testData = new TagHolder(theTag.tagData);
 
-            PictureInfo picInfo = PictureInfo.fromBinaryData(File.ReadAllBytes(TestUtils.GetResourceLocationRoot() + "_Images/pic1.jpg"), PictureInfo.PIC_TYPE.CD);
+            PictureInfo picInfo = fromBinaryData(File.ReadAllBytes(TestUtils.GetResourceLocationRoot() + "_Images/pic1.jpg"), PictureInfo.PIC_TYPE.CD);
             var testPics = theTag.EmbeddedPictures;
             testPics.Add(picInfo);
             theTag.EmbeddedPictures = testPics;
@@ -430,6 +430,15 @@ namespace ATL.test.IO.MetaData
             if (testData.Conductor != "") theTag.Conductor = "John Johnson Jr.";
             if (testData.Publisher != "") theTag.Publisher = "Z Corp.";
             if (testData.GeneralDescription != "") theTag.GeneralDescription = "Description";
+            if (testData.ProductId != "") theTag.ProductId= "ProductId";
+            if (testData.SortAlbum != "") theTag.SortAlbum = "SortAlbum";
+            if (testData.SortAlbumArtist != "") theTag.SortAlbumArtist = "SortAlbumArtist";
+            if (testData.SortArtist != "") theTag.SortArtist = "SortArtist";
+            if (testData.SortTitle != "") theTag.SortTitle = "SortTitle";
+            if (testData.Group != "") theTag.Group = "Group";
+            if (testData.SeriesTitle != "") theTag.SeriesTitle = "SeriesTitle";
+            if (testData.SeriesPart != "") theTag.SeriesPart = "2";
+            if (testData.LongDescription != "") theTag.LongDescription = "LongDescription";
 
             if (testData.AdditionalFields != null && testData.AdditionalFields.Count > 0)
             {
@@ -492,6 +501,15 @@ namespace ATL.test.IO.MetaData
             if (testData.Conductor != "") Assert.AreEqual("John Johnson Jr.", meta.Conductor);
             if (testData.Publisher != "") Assert.AreEqual("Z Corp.", meta.Publisher);
             if (testData.GeneralDescription != "") Assert.AreEqual("Description", meta.GeneralDescription);
+            if (testData.ProductId != "") Assert.AreEqual("ProductId", meta.ProductId);
+            if (testData.SortAlbum != "") Assert.AreEqual("SortAlbum", meta.SortAlbum);
+            if (testData.SortAlbumArtist != "") Assert.AreEqual("SortAlbumArtist", meta.SortAlbumArtist);
+            if (testData.SortArtist != "") Assert.AreEqual("SortArtist", meta.SortArtist);
+            if (testData.SortTitle != "") Assert.AreEqual("SortTitle", meta.SortTitle);
+            if (testData.Group != "") Assert.AreEqual("Group", meta.Group);
+            if (testData.SeriesTitle != "") Assert.AreEqual("SeriesTitle", meta.SeriesTitle);
+            if (testData.SeriesPart != "") Assert.AreEqual("2", meta.SeriesPart);
+            if (testData.LongDescription != "") Assert.AreEqual("LongDescription", meta.LongDescription);
 
             if (testData.AdditionalFields != null && testData.AdditionalFields.Count > 0)
             {
