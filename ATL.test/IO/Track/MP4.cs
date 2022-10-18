@@ -52,6 +52,51 @@ namespace ATL.test.IO.TrackObject
         }
         #endregion
 
+        #region Test Tag editing
+        [TestMethod]
+        public void CS_UpdateAllFields()
+        {
+            string origFile = shortBook;
+
+            //Expected results
+            TestTrackTag resultTag = new TestTrackTag(origFile);
+            resultTag.Album = "New Album";
+            resultTag.Artist = "New Artist";
+            resultTag.AlbumArtist = "New AlbumArtist";
+            resultTag.Title = "New Title";
+            resultTag.Description = "New Description";
+            resultTag.Comments = "New Comment";
+            resultTag.TrackNo = 43;
+            resultTag.DiscNo = 22;
+            resultTag.Composer = "New Composer";
+            resultTag.Copyright = "New Copyright";
+            resultTag.Genre = "New Genre";
+            resultTag.Publisher = "New Publisher";
+            resultTag.Year = 3002;
+            resultTag.PublishDate = new System.DateTime();
+            resultTag.MainPicture = System.IO.File.ReadAllBytes(imagePath1);
+
+            resultTag.FileSize = 13093321; 
+            resultTag.AudioDataOffset = 3669030; //adjusted to removed tags
+            resultTag.AudioDataSize = 9424291; //not sure why this changes? something to do with chapter info in the chapter atoms
+
+            System.IO.File.Delete(fileToTestOn);
+            System.IO.File.Copy(origFile, fileToTestOn);
+            Track theFile = new Track(fileToTestOn);
+            TestTrackTag origTag = new TestTrackTag(theFile);
+
+            OutputDebugDetails(theFile, "PRE", true);
+            resultTag.CopyTo(theFile);
+            theFile.Save(); //Dont need.
+            Track afterFile = new Track(fileToTestOn);
+            TestTrackTag afterTag = new TestTrackTag(afterFile);
+            OutputDebugDetails(afterFile, "POST", true);
+
+            resultTag.Assertions(afterTag);
+
+        }
+        #endregion
+
 
         #region Remove Tags
         [TestMethod]
@@ -300,6 +345,37 @@ namespace ATL.test.IO.TrackObject
                 }
 
             }
+        }
+        public void CopyTo(Track file)
+        {
+            file.Title = Title;
+            file.TrackNumber = TrackNo;
+            file.DiscNumber = DiscNo;
+            file.Artist = Artist;
+            file.Comment = Comments;
+            file.Description = Description;
+            file.Composer = Composer;
+            file.Genre = Genre;
+            file.Year = Year;
+            file.Album = Album;
+            file.AlbumArtist = AlbumArtist;
+            file.Copyright = Copyright;
+            file.Publisher = Publisher;
+            file.PublishingDate = PublishDate;
+
+            //To build
+            if (file.EmbeddedPictures.Count > 0) file.EmbeddedPictures.Clear();
+            file.EmbeddedPictures.Add(PictureInfo.fromBinaryData(MainPicture));
+
+            //if (file.Chapters != null && file.Chapters.Count > 0)
+            //{
+            //    Chapters = new List<TrackChapter>();
+            //    foreach (ChapterInfo o in file.Chapters)
+            //    {
+            //        Chapters.Add(new TrackChapter(o));
+            //    }
+
+            //}
         }
 
         public void ClearMeta()
