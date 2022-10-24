@@ -540,7 +540,8 @@ namespace ATL.test.IO.TrackObject
             Assert.IsTrue(dLenght > dPostLenghtEnd, "File should be smaller.");
             // 8 extra bytes because the empty padding atom (`free` atom) isn't removed by design when using Track.Remove
             // as padding areas aren't considered as metadata per se, and are kept to facilitate file expansion
-            Assert.AreEqual(removeTag_expectedPostLenght + 8, dPostLenghtEnd, $"File should be {removeTag_expectedPostLenght + 8} once tags are removed.");
+            Assert.AreEqual(removeTag_expectedPostLenght, dPostLenghtEnd, $"File should be {removeTag_expectedPostLenght} once tags are removed.");
+            //Assert.AreEqual(removeTag_expectedPostLenght + 8, dPostLenghtEnd, $"File should be {removeTag_expectedPostLenght + 8} once tags are removed.");
 
 
             if (WithErrors) Assert.Fail("There were errors noted in the Logs on saving;");
