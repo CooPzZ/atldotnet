@@ -122,8 +122,9 @@ namespace ATL.AudioData.IO
 
         // Inner technical information to remember for writing purposes
         private uint globalTimeScale;
-        private int qtChapterTextTrackNum;
-        private int qtChapterPictureTrackNum;
+        private readonly IDictionary<int, int> trackTimescales = new Dictionary<int, int>();
+        private int qtChapterTextTrackId;
+        private int qtChapterPictureTrackId;
         private long initialPaddingOffset;
         private uint initialPaddingSize;
         private byte[] chapterTextTrackEdits = null;
@@ -232,17 +233,19 @@ namespace ATL.AudioData.IO
             headerTypeID = MP4_HEADER_TYPE_UNKNOWN;
             bitrateTypeID = MP4_BITRATE_TYPE_UNKNOWN;
 
-            bitrate = 0;
-            sampleRate = 0;
-            calculatedDurationMs = 0;
             globalTimeScale = 0;
-            qtChapterTextTrackNum = 0;
-            qtChapterPictureTrackNum = 0;
+            trackTimescales.Clear();
+            qtChapterTextTrackId = 0;
+            qtChapterPictureTrackId = 0;
             initialPaddingSize = 0;
             initialPaddingOffset = -1;
             AudioDataOffset = -1;
             AudioDataSize = 0;
             udtaOffset = 0;
+
+            bitrate = 0;
+            sampleRate = 0;
+            calculatedDurationMs = 0;
 
             chapterTextTrackEdits = null;
             chapterPictureTrackEdits = null;
@@ -319,7 +322,7 @@ namespace ATL.AudioData.IO
                     cumulatedDuration += textSample.Duration * 1000;
                     chapter.EndTime = (uint)Math.Round(cumulatedDuration);
 
-                    if (pictureSample != null && pictureSample.ChunkOffset > 0)
+                    if (pictureSample != null && pictureSample.ChunkOffset > 0 && pictureSample.Size > 0)
                     {
                         source.BaseStream.Seek(pictureSample.ChunkOffset + pictureSample.RelativeOffset, SeekOrigin.Begin);
                         byte[] data = new byte[pictureSample.Size];
@@ -444,8 +447,16 @@ namespace ATL.AudioData.IO
             // == Quicktime chapters management
 
             // No QT chapter track found -> Assign free track ID
-            if (0 == qtChapterTextTrackNum) qtChapterTextTrackNum = currentTrakIndex++;
-            if (0 == qtChapterPictureTrackNum) qtChapterPictureTrackNum = currentTrakIndex;
+            if (0 == qtChapterTextTrackId)
+            {
+                qtChapterTextTrackId = currentTrakIndex++;
+                trackTimescales[qtChapterTextTrackId] = 1000; // Easier to encode base 10 timecodes
+            }
+            if (0 == qtChapterPictureTrackId)
+            {
+                qtChapterPictureTrackId = currentTrakIndex;
+                trackTimescales[qtChapterPictureTrackId] = 1000; // Easier to encode base 10 timecodes
+            }
 
             // QT chapters have been detected while browsing tracks
             if (chapterTextTrackSamples.Count > 0) readQTChapters(source, chapterTextTrackSamples, chapterPictureTrackSamples);
@@ -647,6 +658,7 @@ namespace ATL.AudioData.IO
 
                 source.BaseStream.Seek(mdiaPosition, SeekOrigin.Begin);
             }
+            trackTimescales[trackId] = mediaTimeScale;
 
             if (0 == navigateToAtom(source.BaseStream, "hdlr"))
             {
@@ -756,12 +768,11 @@ namespace ATL.AudioData.IO
             // Look for "trak.tref.chap" atom to detect QT chapters for current track
             source.BaseStream.Seek(trakPosition + 8, SeekOrigin.Begin);
             uint trefSize = navigateToAtom(source.BaseStream, "tref");
+            long trefPosition = source.BaseStream.Position - 8;
             if (trefSize > 8 && 0 == chapterTrackIndexes.Count)
             {
-                long trefPosition = source.BaseStream.Position - 8;
                 bool parsePreviousTracks = false;
                 uint chapSize = navigateToAtom(source.BaseStream, "chap");
-                // TODO - handle the case where tref is present, but not chap
                 if (chapSize > 0 && (Settings.MP4_keepExistingChapters || Settings.MP4_createQuicktimeChapters))
                 {
                     structureHelper.AddZone(source.BaseStream.Position - 8, (int)chapSize, ZONE_MP4_QT_CHAP_CHAP);
@@ -794,10 +805,18 @@ namespace ATL.AudioData.IO
                     return -1;
                 }
             }
-            else if (0 == trefSize && isCurrentTrackFirstAudioTrack && Settings.MP4_createQuicktimeChapters) // Only add QT chapters to the 1st detected audio or video track
+            else if (isCurrentTrackFirstAudioTrack && Settings.MP4_createQuicktimeChapters) // Only add QT chapters to the 1st detected audio or video track
             {
-                structureHelper.AddZone(trakPosition + trakSize, 0, ZONE_MP4_QT_CHAP_NOTREF);
-                structureHelper.AddSize(trakPosition, trakSize, ZONE_MP4_QT_CHAP_NOTREF);
+                if (0 == trefSize) // No atom at all
+                {
+                    structureHelper.AddZone(trakPosition + trakSize, 0, ZONE_MP4_QT_CHAP_NOTREF);
+                    structureHelper.AddSize(trakPosition, trakSize, ZONE_MP4_QT_CHAP_NOTREF);
+                }
+                else if (trefSize <= 8) // Existing empty atom
+                {
+                    structureHelper.AddZone(trefPosition, trefSize, ZONE_MP4_QT_CHAP_NOTREF);
+                    structureHelper.AddSize(trakPosition, trakSize, ZONE_MP4_QT_CHAP_NOTREF);
+                }
             }
 
             // Read chapters textual data
@@ -816,7 +835,7 @@ namespace ATL.AudioData.IO
 
             source.BaseStream.Seek(stblPosition, SeekOrigin.Begin);
 
-            // VBR detection : if the gap between the smallest and the largest sample size is no more than 1%, we can consider the file is CBR; if not, VBR
+            // Samples analysis
             atomSize = navigateToAtom(source.BaseStream, "stsz");
             if (0 == atomSize)
             {
@@ -824,7 +843,6 @@ namespace ATL.AudioData.IO
                 source.BaseStream.Seek(trakPosition + trakSize, SeekOrigin.Begin);
                 return trakSize;
             }
-            atomPosition = source.BaseStream.Position;
             source.BaseStream.Seek(4, SeekOrigin.Current); // 4-byte flags
             uint blocByteSizeForAll = StreamUtils.DecodeBEUInt32(source.ReadBytes(4));
             if (0 == blocByteSizeForAll) // If value other than 0, same size everywhere => CBR
@@ -844,18 +862,15 @@ namespace ATL.AudioData.IO
                     if (isCurrentTrackFirstChapterPicturesTrack) chapterPictureTrackSamples[i].Size = int32Data;
                 }
 
-                if ((min * 1.01) < max)
+                // VBR detection : if the gap between the smallest and the largest sample size is no more than 1%, we can consider the file is CBR; if not, VBR
+                if (isCurrentTrackFirstAudioTrack)
                 {
-                    bitrateTypeID = MP4_BITRATE_TYPE_VBR;
-                }
-                else
-                {
-                    bitrateTypeID = MP4_BITRATE_TYPE_CBR;
+                    bitrateTypeID = ((min * 1.01) < max) ? MP4_BITRATE_TYPE_VBR : MP4_BITRATE_TYPE_CBR;
                 }
             }
             else
             {
-                bitrateTypeID = MP4_BITRATE_TYPE_CBR;
+                if (isCurrentTrackFirstAudioTrack) bitrateTypeID = MP4_BITRATE_TYPE_CBR;
                 if (isCurrentTrackFirstChapterTextTrack) for (int i = 0; i < chapterTextTrackSamples.Count; i++) chapterTextTrackSamples[i].Size = blocByteSizeForAll;
                 if (isCurrentTrackFirstChapterPicturesTrack) for (int i = 0; i < chapterPictureTrackSamples.Count; i++) chapterPictureTrackSamples[i].Size = blocByteSizeForAll;
             }
@@ -901,12 +916,9 @@ namespace ATL.AudioData.IO
             }
 
             /*
-            * -8 because the header has already been read
-            * 
             * "Physical" audio chunks are referenced by position (offset) in moov.trak.mdia.minf.stbl.stco / co64
             * => They have to be rewritten if the position (offset) of the 'mdat' atom changes
             */
-            source.BaseStream.Seek(atomPosition + atomSize - 8, SeekOrigin.Begin);
             if (readTagParams.PrepareForWriting || isCurrentTrackFirstChapterTextTrack || isCurrentTrackFirstChapterPicturesTrack)
             {
                 source.BaseStream.Seek(stblPosition, SeekOrigin.Begin);
@@ -1018,9 +1030,9 @@ namespace ATL.AudioData.IO
             if (int32Data > 0)
             {
                 if (isText)
-                    qtChapterTextTrackNum = currentTrakIndex;
+                    qtChapterTextTrackId = currentTrakIndex;
                 else
-                    qtChapterPictureTrackNum = currentTrakIndex;
+                    qtChapterPictureTrackId = currentTrakIndex;
 
                 // Memorize zone
                 if (readTagParams.PrepareForWriting && (Settings.MP4_keepExistingChapters || Settings.MP4_createQuicktimeChapters))
@@ -1674,21 +1686,21 @@ namespace ATL.AudioData.IO
             }
             else if (zone.StartsWith(ZONE_MP4_QT_CHAP_NOTREF)) // Write a new tref atom for quicktime chapters
             {
-                result = writeQTChaptersTref(w, qtChapterTextTrackNum, qtChapterPictureTrackNum, Chapters);
+                result = writeQTChaptersTref(w, qtChapterTextTrackId, qtChapterPictureTrackId, Chapters);
             }
             else if (zone.StartsWith(ZONE_MP4_QT_CHAP_CHAP)) // Reference to Quicktime chapter track from an audio/video track
             {
-                result = writeQTChaptersChap(w, qtChapterTextTrackNum, qtChapterPictureTrackNum, Chapters);
+                result = writeQTChaptersChap(w, qtChapterTextTrackId, qtChapterPictureTrackId, Chapters);
             }
             else if (zone.StartsWith(ZONE_MP4_QT_CHAP_TXT_TRAK)) // Quicktime chapter text track
             {
                 if (zone.Equals(ZONE_MP4_QT_CHAP_TXT_TRAK)) // Text track ATL suppors
-                    result = writeQTChaptersTrack(w, qtChapterTextTrackNum, Chapters, globalTimeScale, Convert.ToUInt32(calculatedDurationMs), true);
+                    result = writeQTChaptersTrack(w, qtChapterTextTrackId, Chapters, globalTimeScale, Convert.ToUInt32(calculatedDurationMs), true);
                 else return 1; // Other text track ATL doesn't support; needs to appear active
             }
             else if (zone.StartsWith(ZONE_MP4_QT_CHAP_PIC_TRAK)) // Quicktime chapter picture track
             {
-                result = writeQTChaptersTrack(w, qtChapterPictureTrackNum, Chapters, globalTimeScale, Convert.ToUInt32(calculatedDurationMs), false);
+                result = writeQTChaptersTrack(w, qtChapterPictureTrackId, Chapters, globalTimeScale, Convert.ToUInt32(calculatedDurationMs), false);
             }
             else if (zone.StartsWith(ZONE_MP4_QT_CHAP_MDAT)) // Quicktime chapter data (text and picture data)
             {
@@ -2111,7 +2123,7 @@ namespace ATL.AudioData.IO
 
         private int writeQTChaptersTrack(BinaryWriter w, int trackNum, IList<ChapterInfo> chapters, uint globalTimeScale, uint trackDurationMs, bool isText)
         {
-            long trackTimescale = 44100;
+            long trackTimescale = trackTimescales[trackNum];
 
             if (null == chapters || 0 == chapters.Count) return 0;
             IList<ChapterInfo> workingChapters = isText ? chapters : chapters.Where(ch => ch.Picture != null && ch.Picture.PictureData.Length > 0).ToList();
