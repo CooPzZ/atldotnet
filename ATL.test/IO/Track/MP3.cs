@@ -16,6 +16,7 @@ namespace ATL.test.IO.TrackObject
     {
         readonly string fileToTestOn = @"M:\Temp\Audio\ATLTestOn.mp3";
         readonly string shortBook = @"M:\Temp\Audio\TestBook-Orig.mp3";
+        //readonly string shortBook = @"M:\Temp\Audio\TestMusicFile - Orig.mp3";
         readonly string imagePath1 = @"M:\Temp\Audio\image1.jpg";
         readonly string imagePath2 = @"M:\Temp\Audio\image2.jpg";
         readonly string imagePath3 = @"M:\Temp\Audio\image3.jpg";
@@ -63,7 +64,9 @@ namespace ATL.test.IO.TrackObject
             resultTag.Artist = "New Artist";
             resultTag.AlbumArtist = "New AlbumArtist";
             resultTag.Title = "New Title";
-            resultTag.Description = "New Description";
+            resultTag.Description = ""; //No longer works on MP3 files - ignore
+            resultTag.LongDescription = "New Long Description";
+            resultTag.GroupDescription = "New Group Description";
             resultTag.Comments = "New Comment";
             resultTag.TrackNo = 43;
             resultTag.DiscNo = 22;
@@ -75,9 +78,9 @@ namespace ATL.test.IO.TrackObject
             resultTag.PublishDate = new System.DateTime();
             resultTag.MainPicture = System.IO.File.ReadAllBytes(imagePath1);
 
-            resultTag.FileSize = 9526123; //smaller than before
-            resultTag.AudioDataOffset = 101922; //adjusted to removed tags
-            resultTag.AudioDataSize = 9424209; //not sure why this changes? something to do with chapter info in the chapter atoms
+            resultTag.FileSize = 317243512; //smaller than before
+            resultTag.AudioDataOffset = 3567867; //adjusted to removed tags
+            //resultTag.AudioDataSize = ; //should be the same in mp3 files
 
             System.IO.File.Delete(fileToTestOn);
             System.IO.File.Copy(origFile, fileToTestOn);
@@ -128,9 +131,9 @@ namespace ATL.test.IO.TrackObject
             TestTrackTag resultTag = new TestTrackTag(origFile);
             resultTag.Chapters[0].PictureData = System.IO.File.ReadAllBytes(imagePath1);
             resultTag.Chapters[1].PictureData = System.IO.File.ReadAllBytes(imagePath2);
-            resultTag.FileSize = 16944996; // ; //longer than before with added images was 9623601
-            resultTag.AudioDataSize = 16745214; //bigger than before with added images was 9424291
-            resultTag.AudioDataOffset = 199782; //adjusted with further tag details?? was 199310
+            resultTag.FileSize = 321048146; // ; //longer than before with added images was 9623601
+            //resultTag.AudioDataSize = 16745214; //should be the same in MP3 files
+            resultTag.AudioDataOffset = 7372501; //adjusted with further tag details?? was 199310
 
             AddChapImagesFirst2(origFile, resultTag);
         }

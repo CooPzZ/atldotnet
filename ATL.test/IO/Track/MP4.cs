@@ -99,6 +99,7 @@ namespace ATL.test.IO.TrackObject
 
 
         #region Remove Tags
+        long removeTagShortBookEndSize = 9424201;
         [TestMethod]
         public void CS_RemoveTagSmallBook()
         {
@@ -109,7 +110,7 @@ namespace ATL.test.IO.TrackObject
             resultTag.ClearMeta();
             resultTag.FileSize = 9526123; //smaller than before
             resultTag.AudioDataOffset = 101922; //adjusted to removed tags
-            resultTag.AudioDataSize = 9424209; //not sure why this changes? something to do with chapter info in the chapter atoms
+            resultTag.AudioDataSize = removeTagShortBookEndSize; //changes due to the way the chapters and atoms are stored
             resultTag.Title = "ATLTestOn";
 
             RemoveTag(origFile, resultTag);
@@ -125,9 +126,8 @@ namespace ATL.test.IO.TrackObject
             resultTag.ClearMeta();
             resultTag.FileSize = 579233175; // smaller than before
             resultTag.AudioDataOffset = 3107825; // adjusted to removed tags
-            resultTag.AudioDataSize = 576125358; //not sure why this changes? something to do with chapter info in the chapter atoms
+            resultTag.AudioDataSize = 576125350; //changes due to the way the chapters and atoms are stored
             resultTag.Title = "ATLTestOn";
-            //resultTag.IsVBR = true; //#FAILS: Not sure why this flips -- uncomment to skip issue.
 
             RemoveTag(origFile, resultTag);
 
@@ -212,8 +212,8 @@ namespace ATL.test.IO.TrackObject
             TestTrackTag resultTag = new TestTrackTag(origFile);
             resultTag.ClearMeta();
             resultTag.FileSize = 9526115; //should be the same as CS_RemoveTagSmallBook-8 due to removing a buffer.
-            resultTag.AudioDataOffset = 101914; //should be the same as CS_RemoveTagSmallBook - but getting 101914
-            resultTag.AudioDataSize = 9424209; //should be the same as CS_RemoveTagSmallBook - almost twice the size now?? getting: 16745214.
+            resultTag.AudioDataOffset = 101914; //should be the same as CS_RemoveTagSmallBook 101922 - but getting 101914
+            resultTag.AudioDataSize = removeTagShortBookEndSize; 
             resultTag.Title = "ATLTestOn"; //on clear Track uses file name for Title
 
             System.IO.File.Delete(fileToTestOn);
@@ -247,6 +247,9 @@ namespace ATL.test.IO.TrackObject
         {   
             string origFile = shortBook;
             TestTrackTag resultTag = new TestTrackTag(origFile);
+            //Presumably these changed due to Padding atom handling (https://github.com/Zeugma440/atldotnet/issues/160).
+            resultTag.FileSize = 9623598; 
+            resultTag.AudioDataOffset = 199307;
 
             string fileToTestOn = "M:\\Temp\\Audio\\TestATLRun.m4b";
             System.IO.File.Delete(fileToTestOn);
@@ -269,7 +272,7 @@ namespace ATL.test.IO.TrackObject
             Track afterFile = new Track(fileToTestOn);
             TestTrackTag afterTag = new TestTrackTag(afterFile);
             OutputDebugDetails(afterFile, "POST");
-            resultTag.Assertions(new TestTrackTag(afterFile));
+            resultTag.Assertions(afterTag);
         }
         #endregion
 
@@ -318,6 +321,8 @@ namespace ATL.test.IO.TrackObject
             Artist = file.Artist;
             Comments = file.Comment;
             Description = file.Description;
+            LongDescription = file.LongDescription;
+            GroupDescription = file.Group;
             Composer = file.Composer;
             Genre = file.Genre;
             Year = file.Year;
@@ -354,6 +359,8 @@ namespace ATL.test.IO.TrackObject
             file.Artist = Artist;
             file.Comment = Comments;
             file.Description = Description;
+            file.LongDescription = LongDescription;
+            file.Group = GroupDescription;
             file.Composer = Composer;
             file.Genre = Genre;
             file.Year = Year;
@@ -413,6 +420,8 @@ namespace ATL.test.IO.TrackObject
         public string Artist;
         public string Comments;
         public string Description;
+        public string LongDescription;
+        public string GroupDescription;
         public string Composer;
         public string Genre;
         public int? Year;
@@ -441,6 +450,8 @@ namespace ATL.test.IO.TrackObject
             Assert.AreEqual(Artist, Against.Artist, "Artist not as expected.");
             Assert.AreEqual(Comments, Against.Comments, "Comments not as expected.");
             Assert.AreEqual(Description, Against.Description, "Description not as expected.");
+            Assert.AreEqual(LongDescription, Against.LongDescription, "LongDescription not as expected.");
+            Assert.AreEqual(GroupDescription, Against.GroupDescription, "GroupDescription not as expected.");
             Assert.AreEqual(Composer, Against.Composer, "Composer not as expected.");
             Assert.AreEqual(Genre, Against.Genre, "Genre not as expected.");
             Assert.AreEqual(Year, Against.Year, "Year not as expected.");
